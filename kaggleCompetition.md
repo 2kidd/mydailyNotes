@@ -28,7 +28,9 @@
 
 9.这里有一个坑，就是我是双卡训练的模型，所以模型权重文件使用的双T4卡训练保存的。在推理时，如果只使用了一张卡或者在CPU上做推理测试，Pytorch可能会因为找不到原来的GPU而报错。在torch.load()里面加上map_location=device，就会把权重映射到当前可用的设备上。
 
-10.kaggle竞赛提交的notebook不能联网，而且最终也不是提交一个结果文件，而是提交一个notebook，kaggle后台会运行这个notebook。所以可以直接加载别人上传的model，也可以自己直接去下载model后，再本地上传到kaggle使用。
+10.kaggle竞赛提交的notebook不能联网，而且最终也不是提交一个结果文件，而是提交一个notebook，kaggle后台会运行这个notebook。所以可以直接加载别人上传的model，也可以自己直接去下载model后，再本地上传到kaggle使用。提交后的滚动排行榜排名如图。
+
+![image-20260310205808766](./assets/image-20260310205808766.png)
 
 ### Code（代码实验）：
 
@@ -48,4 +50,19 @@
             input_ids = input_ids + [self.pad_token_id] * pad_length
             attention_mask = attention_mask + [0] * pad_length # 填充部分的 mask 为 0
 ```
+
+2.特殊的token：**[CLS]**和**[SEP]**，是分词器tokenizer内置的特殊符号，作用如下表。
+
+| 特殊 token | 代码里的写法        | 含义                           | 作用                                                         |
+| ---------- | ------------------- | ------------------------------ | :----------------------------------------------------------- |
+| **[CLS]**  | `self.cls_token_id` | **Classification**（分类标记） | 放在最开头，模型会把整个序列的信息浓缩到这个位置（后面就只需要取它做分类） |
+| **[SEP]**  | `self.sep_token_id` | **Separator**（分隔符）        | 用来分割不同部分（Prompt / Response A / Response B）         |
+
+代码手动拼接序列完整格式
+
+```python
+input_ids = [CLS] + prompt_tokens + [SEP] + A_tokens + [SEP] + B_tokens + [SEP]  #拼接提示词、模型A的回答、模型B的回答
+```
+
+3.代码是如何fine-tuning（微调）DeBERTa模型的？使用的全参数微调（Full Fine-Tuning），代码没有冻结任何层，所以DeBERTa模型的每一层权重在反向传播时都会变化调整。整个网络结构只是在DeBERTa模型后面加了一个分类头（一层的全连接神经网络，不包括输入层，输出层不加激活函数，输出logits）。
 
