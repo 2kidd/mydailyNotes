@@ -8,6 +8,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/style.min.css" title="docsify-darklight-theme" type="text/css">
+
+  
+   <style>
+  /* 电脑端样式 */
+  #custom-mascot {
+    position: fixed;
+    right: 10px;       /* 距离右边距离 */
+    bottom: 0;         /* 贴紧底部 */
+    z-index: 99;       /* 确保在最上层 */
+    pointer-events: none; /* 鼠标可以穿透图片，不影响点后面的按钮 */
+    opacity: 0.8;      /* 半透明，不遮挡视线 */
+    transition: opacity 0.3s;
+  }
+  
+  #custom-mascot:hover {
+    opacity: 1;        /* 鼠标悬停时恢复清晰 */
+  }
+
+  #custom-mascot img {
+    width: 150px;      /* 电脑端图片宽度，你可以根据图片比例调整 */
+    height: auto;
+  }
+
+  /* 移动端（手机）适配逻辑 */
+  @media (max-width: 768px) {
+    #custom-mascot {
+      /* 如果想在手机上显示，就把下面的 none 改成 block */
+      display: block;  
+      right: 0;
+      bottom: -10px;
+    }
+    #custom-mascot img {
+      width: 80px;     /* 手机端大幅缩小，避免挡住文字 */
+      opacity: 0.5;    /* 手机端更透明一些 */
+    }
+  }
+</style>
+
+
 </head>
 
 <body>
@@ -54,6 +93,9 @@
   
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
-  <script src="https://fastly.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/autoload.js"></script>
+  
+  <div id="custom-mascot">
+    <img src="assets/cutesister.png" alt="看板娘">
+  </div>
 </body>
 </html>
