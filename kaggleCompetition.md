@@ -12,7 +12,7 @@
 
 
 
-### Problem（思考与遇到的问题）:
+### Problem（思考与遇到的问题）日志:
 
 1.如果顺序一直是提示词+a回答+b回答，截断的基本都是b回答的文本。误差很大。采取了提示词、model a回答、model b回答都要设置一个最长长度（比如分别最长长度为），都要截取。长度设置是采用的总数据里面随机选取1000条数据，之后看95%分位数那个位置的长度，之后确定的长度。
 
@@ -101,12 +101,24 @@ $$
 
 1.
 
-### Problem（思考与遇到的问题）：
+### Problem（思考与遇到的问题）日志：
 
 1.Meta官网的llama-3-8b需要签许可协议才能使用他的开源模型，我在官网找了好久，发现有些签许可的链接全是404失效的。今天下午（3/11/2026）就这个许可就捣鼓了几十分钟，实在没在kaggle和meta官网解决，要么只能取hugging face下载模型之后上传到kaggle了，但是我采取的是一定有人上传了这个模型在kaggle上并公开了，所以直接在kaggle上搜索别人上传并公开的llama3。
 
-2.代码问题，device_map="auto"，面对大模型，单张卡装不下时，双卡可以一起装，即GPU 0装模型的上半部分，GPU 1装模型的下半部分，是流水线并行（Pipeline Parallelism）模式。这样会造成数据输入时，GPU 0先算，GPU 1等着，GPU 0算完了再把中间结果传到GPU 1，GPU 1再开始计算，GPU 0又等着，两张卡都用了，但是同时只有一张卡在计算训练，而且卡与卡之间的传输数据通信延迟还需要耗费大量时间，造成训练模型速度更慢，不过这样确实是用了时间换空间。
+2.代码问题，在hugging face框架下加上device_map="auto"，面对大模型，单张卡装不下时，双卡可以一起装，即GPU 0装模型的上半部分，GPU 1装模型的下半部分，是流水线并行（Pipeline Parallelism，也叫模型并行）模式，单进程。本次实验实测速度为0.02it/s。这样会造成数据输入时，GPU 0先算，GPU 1等着，GPU 0算完了再把中间结果传到GPU 1，GPU 1再开始计算，GPU 0又等着，两张卡都用了，但是同时只有一张卡在计算训练，而且卡与卡之间的传输数据通信延迟还需要耗费大量时间，造成训练模型速度更慢，不过这样确实是用了时间换空间。
 
-3.而数据并行（Data Parallel）速度快很多。两张卡GPU 0与GPU 1分别装一个完整的模型，然后把一个batch的数据分成两半，每张卡同时跑半个batch，速度快很多（翻倍），所以对于单张卡有余量，且对于输入数据、中间过程数据有空间，可以采用数据并行。
+3.而数据并行（Data Parallel，DP）速度快很多。两张卡GPU 0与GPU 1分别装一个完整的模型，然后把一个batch的数据分成两半，每张卡同时跑半个batch（完整batch的一半，比如batchsize=64，两张卡分别跑32个样本），速度快很多（翻倍），所以对于单张卡有余量，且对于输入数据、中间过程数据有空间，可以采用数据并行。
 
-4.数据并行的方式失败，改用单卡（16G）先实验速通跑一遍吧。
+4.但是分布式数据并行（Distributed Data Parallel，DDP）速度更快，Pytorch官方文档都有这样一句话“DataParallel is deprecated and we strongly recommend using DistributedDataParallel instead”。DDP与DP相同点都是把一个模型完整的复制到每张卡上，每张卡均摊一个完整的批次。其实DP相当于“单进程+多线程”（Pytorch内部开多个线程，进行Python操作时还是每张卡互相抢着轮流用python操作，并未真正的并行），而DDP是“多进程”（会启动卡数量个完全独立的Python进程，进程之间互不干扰，每张卡互相独立的使用Python操作，实现并行）。其实DP与DDP最根本的区别就是梯度平均（汇总）的方式不一样。DP与DDP异同（设一台机器两张卡（单机多卡），batchsize=64）：
+
+| 任务           | DP (DataParallel)                                            | DDP (DistributedDataParallel)                                |
+| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 每张卡算什么？ | 各算一半 batch（32 个样本）                                  | 各算一半 batch（32 个样本）                                  |
+| 梯度怎么平均   | 全部梯度**集中到第 0 张卡**求平均，再广播回去，每张卡再梯度更新 | 两张卡**直接互相通信**（AllReduce），互相拿到对方的梯度，之后各自梯度反向更新 |
+| 复制模型时     | 每次前向传播都要重新复制（每一步训练都要重复这个操作）       | 启动时只复制一次，复制到每个进程                             |
+
+综上，DDP速度比DP速度快一点（当然定性分析是这样）。
+
+5.数据并行DP的方式，删掉了device_map="auto"这行代码，Pytroch原生的DP与4-bit量化冲突了（内存地址错乱），输出报错信息如RuntimeError: CUDA error: CUBLAS_STATUS_EXECUTION_FAILED when calling `cublasGemmEx( handle, opa, opb, m, n, k, alpha_ptr, a, CUDA_R_16F, lda, b, CUDA_R_16F, ldb, beta_ptr, c, std::is_same_v<C_Dtype, float> ? CUDA_R_32F : CUDA_R_16F, ldc, compute_type, CUBLAS_GEMM_DEFAULT_TENSOR_OP)`。后面不得已使用单卡微调训练了，指定一张单卡微调训练。
+
+6.使用的Unsloth+单卡微调训练。
