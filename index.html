@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/style.min.css" title="docsify-darklight-theme" type="text/css">
-
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
   
    <style>
   /* 电脑端样式 */
@@ -54,6 +54,10 @@
   #custom-mascot img {
     animation: hover 2s ease-in-out infinite; /* 每3秒起伏一次 */
   }
+  /* 让代码块也支持行号显示 */
+   code[class*="language-"], pre[class*="language-"] {
+     white-space: pre-wrap !important;
+   }
 </style>
 
 
@@ -92,6 +96,15 @@
       alias: {
         '/.*/_sidebar.md': '/_sidebar.md'
       }
+
+      // 开启代码行号配置
+      markdown: {
+        renderer: {
+          code: function(code, lang) {
+            return this.origin.code.apply(this, arguments).replace('<pre', '<			  pre class="line-numbers"');
+          }
+        }
+      },
     }
   </script>
 
@@ -107,5 +120,12 @@
   <div id="custom-mascot">
     <img src="assets/cutesister1.png" alt="看板娘">
   </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/docsify-katex@latest/dist/docsify-katex.js"></script>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
 </body>
 </html>
