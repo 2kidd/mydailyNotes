@@ -104,7 +104,7 @@ $(8*10^9*2Bytes)/1024*1024*1024=14.9G=>16G（近似）$
 
 1.Meta官网的llama-3-8b需要签许可协议才能使用他的开源模型，我在官网找了好久，发现有些签许可的链接全是404失效的。今天下午（3/11/2026）就这个许可就捣鼓了几十分钟，实在没在kaggle和meta官网解决，要么只能取hugging face下载模型之后上传到kaggle了，但是我采取的是一定有人上传了这个模型在kaggle上并公开了，所以直接在kaggle上搜索别人上传并公开的llama3。
 
-2.代码问题，在hugging face框架下加上device_map="auto"，面对大模型，单张卡装不下时，双卡可以一起装，即GPU 0装模型的上半部分，GPU 1装模型的下半部分，是流水线并行（Pipeline Parallelism，也叫模型并行）模式，单进程。本次实验实测速度为0.02it/s。这样会造成数据输入时，GPU 0先算，GPU 1等着，GPU 0算完了再把中间结果传到GPU 1，GPU 1再开始计算，GPU 0又等着，两张卡都用了，但是同时只有一张卡在计算训练，而且卡与卡之间的传输数据通信延迟还需要耗费大量时间，造成训练模型速度更慢，不过这样确实是用了时间换空间。
+2.代码问题，在hugging face框架下加上device_map="auto"，面对大模型，单张卡装不下时，双卡可以一起装，即GPU 0装模型的上半部分，GPU 1装模型的下半部分，是流水线模型并行（Pipeline Parallelism，也叫模型并行）模式，单进程。本次实验实测速度为0.02it/s。这样会造成数据输入时，GPU 0先算，GPU 1等着，GPU 0算完了再把中间结果传到GPU 1，GPU 1再开始计算，GPU 0又等着，两张卡都用了，但是同时只有一张卡在计算训练，而且卡与卡之间的传输数据通信延迟还需要耗费大量时间，造成训练模型速度更慢，不过这样确实是用了时间换空间。
 
 3.而数据并行（Data Parallel，DP）速度快很多。两张卡GPU 0与GPU 1分别装一个完整的模型，然后把一个batch的数据分成两半，每张卡同时跑半个batch（完整batch的一半，比如batchsize=64，两张卡分别跑32个样本），速度快很多（翻倍），所以对于单张卡有余量，且对于输入数据、中间过程数据有空间，可以采用数据并行。
 
@@ -120,6 +120,16 @@ $(8*10^9*2Bytes)/1024*1024*1024=14.9G=>16G（近似）$
 
 5.数据并行DP的方式，删掉了device_map="auto"这行代码，Pytroch原生的DP与4-bit量化冲突了（内存地址错乱），输出报错信息如RuntimeError: CUDA error: CUBLAS_STATUS_EXECUTION_FAILED when calling `cublasGemmEx( handle, opa, opb, m, n, k, alpha_ptr, a, CUDA_R_16F, lda, b, CUDA_R_16F, ldb, beta_ptr, c, std::is_same_v<C_Dtype, float> ? CUDA_R_32F : CUDA_R_16F, ldc, compute_type, CUBLAS_GEMM_DEFAULT_TENSOR_OP)`。后面不得已使用单卡微调训练了，指定一张单卡微调训练。
 
-6.使用的Unsloth+单卡微调训练。一个加速微调训练Llama-3的开源库，Unsloth使用了C++和Triton重写了Llama-3的底层数学计算（注意力机制和LoRA运算），成功使用了Unsloth，不过速度确实增长了两倍，但是还是太慢了，要想微调训练我本次的模型，所化的时间太长，马上更换方案，采取TPU v5-8显卡。
+6.使用的Unsloth+单卡微调训练。一个加速微调训练Llama-3的开源库，Unsloth使用了C++和Triton重写了Llama-3的底层数学计算（注意力机制和LoRA运算），成功使用了Unsloth，不过速度确实增长了两倍，但是还是太慢了，要想微调训练我本次的模型，所花的时间太长，马上更换方案，采取TPU v5e-8显卡。
 
-7.
+7.使用TPU微调训练，再使用GPU推理。全分片数据并行（FSDP），速度快，省显存。
+
+
+
+### Coding（代码实践）:
+
+#### 训练时Coding：
+
+1.在GPU与TPU预处理图像是很慢的，代码里就要在CPU中预处理图像。
+
+2.为什么lz每次在kaggle平台微调训练大模型时开启分布式数据并行模式（DDP），总是失败，一次都没有成功过，全是失败的，当然我都是采用了LoRA量化大模型再开启DDP模式，全是失败的，一次都没有跑起来，是kaggle平台的bug特性导致不能使用DDP还是LoRA后与开启DDP有冲突呀，我破防了，鄙人本来就不会写代码，ai生成开启DDP模式的代码又一直错，又一直改，破防了，今上午搞一上午鞭策ai改代码，结果啥也没搞出来，浪费一上午时间。
