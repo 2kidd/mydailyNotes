@@ -47,14 +47,15 @@
 1.attention mask代码片段如下，加入attention mask是为了让Transformer模型知道哪些token是真实内容，会去计算注意力。padding填充零的不参与注意力计算。DeBERTa（以及所有Transformer）在计算self-attention时会对整个序列（包括padding）都做计算，这样会把padding的token当成有意义的内容，导致注意力分数被污染、计算时间变长、训练不稳定，所以加了mask后，模型会把padding的位置当成无意义的内容，不参与计算注意力。而且一定需要padding补齐，因为模型需要batch内的形状一致。
 
 ```python
-        # 4. 生成 Attention Mask (有真实 Token 的地方是 1)
-        attention_mask = [1] * len(input_ids)
+# 4. 生成 Attention Mask (有真实 Token 的地方是 1)
+attention_mask = [1] * len(input_ids)
         
-        # 5. Padding (填充到固定的最大长度)
-        pad_length = self.total_max_len - len(input_ids)
-        if pad_length > 0:
-            input_ids = input_ids + [self.pad_token_id] * pad_length
-            attention_mask = attention_mask + [0] * pad_length # 填充部分的 mask 为 0
+# 5. Padding (填充到固定的最大长度)
+pad_length = self.total_max_len - len(input_ids)
+if pad_length > 0:
+	input_ids = input_ids + [self.pad_token_id] * pad_length
+    # 填充部分的 mask 为 0
+	attention_mask = attention_mask + [0] * pad_length 
 ```
 
 2.特殊的token：[CLS]和[SEP]，是分词器tokenizer内置的特殊符号，作用如下表。
@@ -67,7 +68,8 @@
 代码手动拼接序列完整格式
 
 ```python
-input_ids = [CLS] + prompt_tokens + [SEP] + A_tokens + [SEP] + B_tokens + [SEP]  #拼接提示词、模型A的回答、模型B的回答
+#拼接提示词、模型A的回答、模型B的回答
+input_ids = [CLS] + prompt_tokens + [SEP] + A_tokens + [SEP] + B_tokens + [SEP]  
 ```
 
 3.代码是如何fine-tuning（微调）DeBERTa模型的？使用的全参数微调（Full Fine-Tuning），代码没有冻结任何层，所以DeBERTa模型的每一层权重在反向传播时都会变化调整。整个网络结构只是在DeBERTa模型后面加了一个分类头（一层的全连接神经网络，不包括输入层，输出层不加激活函数，输出logits）。
@@ -86,9 +88,13 @@ input_ids = [CLS] + prompt_tokens + [SEP] + A_tokens + [SEP] + B_tokens + [SEP] 
 
 ​	毕竟使用的实验环境显卡为GPU T4*2，一共32G显存，微调80亿的部分参数。因为该模型有80亿的全量参数，如果按照FP16（16位浮点数，其实16位浮点数精度不高）加载进入显卡里
 
-$1GB=1024MB=1024*1024KBytes=1024*1024*1024Bytes$
+$$
+1GB=1024MB=1024*1024KBytes=1024*1024*1024Bytes
+$$
 
-$(8*10^9*2Bytes)/1024*1024*1024=14.9G=>16G（近似）$
+$$
+(8*10^9*2Bytes)/1024*1024*1024=14.9G=>16G（近似）
+$$
 
 直接干到16GB（一张单卡16G）了，直接显存爆炸，不现实，而且这里还只是算静态加载参数进来，在训练阶段还会有许多中间变量存储（梯度反向传播时梯度值、优化器状态、中间激活值），输入数据的显存占用还没加上，会需要占用更多显存，并且这里还是采用的精度不是很高的FP16类型数据存储。所以必须采取某些技术冻结大部分参数，微调部分参数。
 
