@@ -36,7 +36,7 @@
 
 10.kaggle竞赛提交的notebook不能联网（也就是训练的时候随便联网，但是提交推理的时候禁止联网），而且最终也不是提交一个结果文件，而是提交一个notebook，kaggle后台会运行这个notebook。所以可以直接加载别人上传的model，也可以自己直接去下载model后，再本地上传到kaggle使用。提交后的滚动排行榜排名如图。
 
-![image-20260310205808766](./assets/image-20260310205808766.png)
+<center><img src="./assets/image-20260310205808766.png" alt="image-20260310205808766" /><div>排行榜图</div></center>
 
 ### Code（代码实验）：
 
