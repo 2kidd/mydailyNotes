@@ -101,7 +101,7 @@ $$
 对于两类$ω_1$，$ω_2$问题
 $$
 \text{若 } P(\omega_1 \mid \vec{x}) > P(\omega_2 \mid \vec{x}) \text{ 则 } \vec{x} \in \omega_1 
-\\
+\\_
 \text{若 } P(\omega_1 \mid \vec{x}) < P(\omega_2 \mid \vec{x}) \text{ 则 } \vec{x} \in \omega_2
 $$
 
@@ -110,16 +110,8 @@ P(\omega_i \mid \vec{x}) = \frac{P(\vec{x} \mid \omega_i) P(\omega_i)}{p(\vec{x}
 = \frac{P(\vec{x} \mid \omega_i) P(\omega_i)}{\sum_{i=1}^2 p(\vec{x} \mid \omega_i) P(\omega_i)}
 $$
 
-其中$P(\vec{x} \mid \omega_i)$也叫做似然函数（likelihood function of class $\omega_i$）。
+其中\[ P(\vec{x} \mid \omega_i)\]也叫做似然函数（likelihood function of class $\omega_i$）。
 
 2.**最小化预期损失**（最小化平均损失）：
 
 损失函数（成本函数）、效用函数、损失矩阵
-
-```latex
-\[
-P(\omega_i \mid \vec{x}) = \frac{P(\vec{x} \mid \omega_i) P(\omega_i)}{p(\vec{x})}
-= \frac{P(\vec{x} \mid \omega_i) P(\omega_i)}{\sum_{i=1}^2 p(\vec{x} \mid \omega_i) P(\omega_i)}
-\]
-```
-
