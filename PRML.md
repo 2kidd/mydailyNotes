@@ -92,7 +92,7 @@ $$
 
 4.关于处理数据时，维度太高使用定性思维可能会产生维度灾难（curse of dimensionality）。那唯独太高怎么处理呢？不用急，有个流形假设（Manifold Hypothesis），虽然数据分布在高维空间中，但是在现实生活中实际上有用的只分布在低维的流形上，也就是说真实需要用的数据只占高维空间中很小的一部分（一个低维结构嵌入在高维空间中）。
 
-5.posterior ∝ likelihood × prior 。
+5.posterior ∝ likelihood × prior 。后验分布与似然函数、先验分布成正比。
 
 #### 贝叶斯决策准则
 
@@ -110,3 +110,7 @@ P(\omega_i \mid \vec{x}) = \frac{P(\vec{x} \mid \omega_i) P(\omega_i)}{p(\vec{x}
 $$
 
 其中$P(\vec{x} \mid \omega_i)$也叫做似然函数（likelihood function of class $\omega_i$）。
+
+2.**最小化预期损失**（最小化平均损失）：
+
+损失函数（成本函数）、效用函数、损失矩阵
