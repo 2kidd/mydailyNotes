@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <title>Notes of Reverse</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="日常杂记与胡思乱想">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/style.min.css" title="docsify-darklight-theme" type="text/css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
+  
+  <style>
+    /* 完全保留你的看板娘样式与动画 */
+    #custom-mascot {
+      position: fixed;
+      right: 10px;
+      bottom: 200px;
+      z-index: 99;
+      pointer-events: none;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+    }
+    #custom-mascot:hover { opacity: 1; }
+    #custom-mascot img { width: 150px; height: auto; }
+
+    @media (max-width: 768px) {
+      #custom-mascot {
+        display: block;  
+        right: 0;
+        bottom: 300px;
+      }
+      #custom-mascot img { width: 80px; opacity: 0.5; }
+    }
+    
+    @keyframes hover {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+    #custom-mascot img { animation: hover 2s ease-in-out infinite; }
+  </style>
+</head>
+
+<body>
+  <div id="app">加载中...</div>
+
+  <script src="//cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      options: {
+        ignoreHtmlClass: ".*",
+        processHtmlClass: "mathjax-render" // 只渲染被我们插件保护的区域
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <script>
+    var num = 0;
+    mermaid.initialize({ startOnLoad: false });
+
+    window.$docsify = {
+      name: 'Reverse随记',
+      loadSidebar: true, 
+      subMaxLevel: 2,
+      
+      // Mermaid 与代码行号渲染
+      markdown: {
+        renderer: {
+          code: function(code, lang) {
+            if (lang === "mermaid") {
+              return '<div class="mermaid">' + mermaid.render('mermaid-svg-' + num++, code) + "</div>";
+            }
+            if (this.origin.code) {
+              return this.origin.code.apply(this, arguments).replace('<pre', '<pre class="line-numbers"');
+            }
+            return '<pre class="line-numbers"><code class="language-' + lang + '">' + code + '</code></pre>';
+          }
+        }
+      },
+
+      // 暗黑模式完全保留
+      darklightTheme: {
+        siteFont: "PT Sans",
+        defaultTheme: 'light',
+        codeFontFamily: 'Roboto Mono, Monaco, courier, monospace',
+        bodyFontSize: '15px',
+        dark: {
+          accent: '#42b983',
+          toogleBackground: '#ffffff',
+          background: '#091a28',
+          textColor: '#b9b9b9',
+        },
+        light: {
+          accent: '#42b983',
+          toogleBackground: '#091a28',
+          background: '#ffffff',
+          textColor: '#34495e'
+        }
+      },
+      
+      alias: { '/.*/_sidebar.md': '/_sidebar.md' },
+
+      // 【核心突破】自定义拦截插件：给公式穿上防弹衣
+      plugins: [
+        function(hook, vm) {
+          // 在 Markdown 引擎搞破坏之前，把 $$ 和 $ 包裹在 HTML div 中保护起来
+          hook.beforeEach(function(content) {
+            return content
+              .replace(/\$\$([\s\S]*?)\$\$/g, function(m, code) {
+                return '<div class="mathjax-render" style="text-align: center; margin: 1em 0;">\\[' + code + '\\]</div>';
+              })
+              .replace(/\$([^$\n]*?)\$/g, function(m, code) {
+                return '<span class="mathjax-render">\\(' + code + '\\)</span>';
+              });
+          });
+
+          // 等页面元素就绪后，呼叫 MathJax 进场渲染
+          hook.doneEach(function() {
+            if (typeof MathJax !== 'undefined') {
+              MathJax.typesetPromise();
+            }
+          });
+        }
+      ]
+    }
+  </script>
+
+  <script src="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/index.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+  <div id="custom-mascot">
+    <img src="assets/cutesister1.png" alt="看板娘">
+  </div>
+</body>
+</html>
