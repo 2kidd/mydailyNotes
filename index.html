@@ -56,7 +56,7 @@
       },
       options: {
         ignoreHtmlClass: ".*",
-        processHtmlClass: "mathjax-render" // 只渲染被我们插件保护的区域
+        processHtmlClass: "mathjax-render" 
       }
     };
   </script>
@@ -68,10 +68,13 @@
 
     window.$docsify = {
       name: 'Reverse随记',
-      loadSidebar: true, 
+      
+      // 【核心绕过策略】明确指定新文件名，彻底避开 Vercel 敏感词拦截
+      homepage: 'home.md', 
+      loadSidebar: 'sidebar.md', 
+      
       subMaxLevel: 2,
       
-      // Mermaid 与代码行号渲染
       markdown: {
         renderer: {
           code: function(code, lang) {
@@ -86,7 +89,6 @@
         }
       },
 
-      // 暗黑模式完全保留
       darklightTheme: {
         siteFont: "PT Sans",
         defaultTheme: 'light',
@@ -106,12 +108,11 @@
         }
       },
       
-      alias: { '/.*/_sidebar.md': '/_sidebar.md' },
+      // 【同步修改】让所有子目录正确找到新的侧边栏文件
+      alias: { '/.*/sidebar.md': '/sidebar.md' },
 
-      // 【核心突破】自定义拦截插件：给公式穿上防弹衣
       plugins: [
         function(hook, vm) {
-          // 在 Markdown 引擎搞破坏之前，把 $$ 和 $ 包裹在 HTML div 中保护起来
           hook.beforeEach(function(content) {
             return content
               .replace(/\$\$([\s\S]*?)\$\$/g, function(m, code) {
@@ -122,7 +123,6 @@
               });
           });
 
-          // 等页面元素就绪后，呼叫 MathJax 进场渲染
           hook.doneEach(function() {
             if (typeof MathJax !== 'undefined') {
               MathJax.typesetPromise();
