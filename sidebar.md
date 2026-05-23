@@ -6,3 +6,4 @@
 - [kaggle的LLM入门竞赛](kaggleCompetition.md)
 - [PRML（模式识别与机器学习）](PRML.md)
 - [Myself](MYSELF.md)
+- [看番日常](AnimeManga.md)
