@@ -18,19 +18,7 @@
 
 #### 流程图：高效实验敏捷验证漏斗
 
-```mermaid
-graph TD
-    A[新想法/新Module构思] --> B[Step 1: 单批次过拟合测试 5min]
-    B -- Loss无法归0: 代码Bug/阻断梯度 --> B1[修Bug / 检查前向]
-    B -- Loss顺利归0 --> C[Step 2: 动力学探测 15min]
-    C --> C1[监控 Gradient Norm]
-    C --> C2[统计输出均值/方差/零元素比例]
-    C1 & C2 -- 梯度死掉/激活异常 --> C3[增加零初始化 / 尺度调整]
-    C1 & C2 -- 状态健康 --> D[Step 3: 轻量/冻结验证 1~2h]
-    D --> D1[冻结Backbone 或 用轻量子集]
-    D --> D2[观察 Lcls 与 Lreg 冲突 / CKA相似度]
-    D2 -- 指标提升且互补 --> E[Step 4: 全量启动 50h 最终SOTA训练]
-```
+![image-20261104221729314](./assets/image-20261104221729314.png)
 
 ---
 
@@ -68,21 +56,7 @@ graph TD
 
 #### 架构图：$2 \times 2 = 4$ 组参数分配矩阵
 
-```mermaid
-classDiagram
-    class 优化器全部可学习参数 {
-    }
-    class Backbone预训练组_小LR {
-        权重矩阵 ndim >= 2: 带 Decay, lr = 0.1x
-        Bias与Norm ndim <= 1: 无 Decay, lr = 0.1x
-    }
-    class Head_Fusion组_大LR {
-        权重矩阵 ndim >= 2: 带 Decay, lr = 1.0x
-        Bias与Norm ndim <= 1: 无 Decay, lr = 1.0x
-    }
-    优化器全部可学习参数 --> Backbone预训练组_小LR : 预训练特征层
-    优化器全部可学习参数 --> Head_Fusion组_大LR : 新模块 / 随机初始化层
-```
+![image-20261104221805615](./assets/image-20261104221805615.png)
 
 ---
 
@@ -100,16 +74,7 @@ classDiagram
 
 #### 曲线图：学习率在时间维度上的演变
 
-```mermaid
-graph LR
-    subgraph 阶段一: Warmup
-        W0[Step 0: lr 从极小值起步] -->|线性爬坡| W1[Warmup 结束: 达到参数组峰值 LR]
-    end
-    subgraph 阶段二: Cosine Annealing
-        W1 -->|余弦 S 型平滑下降| C1[训练中后期: 快速收敛锁定区域]
-        C1 -->|平缓贴地滑行| C2[T_max 终点: 精确落入最优谷底]
-    end
-```
+![image-20261104221925796](./assets/image-20261104221925796.png)
 
 ---
 
