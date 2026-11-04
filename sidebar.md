@@ -8,3 +8,4 @@
 - [看番日常](AnimeManga.md)
 - [科研问题](TopicsExperiments.md)
 - [炼丹](deeplearning-alchemy.md)
+- [AI2Anything](How2AI-Anything.md)
