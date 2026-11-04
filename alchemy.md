@@ -3,9 +3,6 @@
 记录自己的一些深度学习炼丹技巧
 
 
-
----
-
 ## 第一部分：如何高效做深度学习实验？（How to do experiment efficiently with deep learning?）
 
 ### 1. 高效排错与验证流程（1~8 步）
