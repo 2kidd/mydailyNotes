@@ -8,4 +8,4 @@
 - [Myself](MYSELF.md)
 - [看番日常](AnimeManga.md)
 - [科研问题](Topics.md)
-- [炼丹](alchemy.md)
+- [炼丹技巧](alchemy.md)
