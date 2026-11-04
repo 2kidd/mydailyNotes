@@ -7,5 +7,3 @@
 - [PRML（模式识别与机器学习）](PRML.md)
 - [Myself](MYSELF.md)
 - [看番日常](AnimeManga.md)
-- [科研问题](topics.md)
-- [炼丹技巧](alchemy.md)
