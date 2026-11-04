@@ -48,21 +48,6 @@
   <script src="//cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
 
   <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['\\(', '\\)']],
-        displayMath: [['\\[', '\\]']],
-        processEscapes: true
-      },
-      options: {
-        ignoreHtmlClass: ".*",
-        processHtmlClass: "mathjax-render" 
-      }
-    };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-  <script>
     var num = 0;
     mermaid.initialize({ startOnLoad: false });
 
@@ -109,32 +94,18 @@
       },
       
       // 【同步修改】让所有子目录正确找到新的侧边栏文件
-      alias: { '/.*/sidebar.md': '/sidebar.md' },
-
-      plugins: [
-        function(hook, vm) {
-          hook.beforeEach(function(content) {
-            return content
-              .replace(/\$\$([\s\S]*?)\$\$/g, function(m, code) {
-                return '<div class="mathjax-render" style="text-align: center; margin: 1em 0;">\\[' + code + '\\]</div>';
-              })
-              .replace(/\$([^$\n]*?)\$/g, function(m, code) {
-                return '<span class="mathjax-render">\\(' + code + '\\)</span>';
-              });
-          });
-
-          hook.doneEach(function() {
-            if (typeof MathJax !== 'undefined') {
-              MathJax.typesetPromise();
-            }
-          });
-        }
-      ]
+      alias: { '/.*/sidebar.md': '/sidebar.md' }
     }
   </script>
 
   <script src="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/index.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+
+  <!-- ==================== LaTeX 公式支持插件（放 docsify 之后，不要加 async） ==================== -->
+  <script src="//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-latex@0"></script>
+  <!-- ======================================================================================= -->
+
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
