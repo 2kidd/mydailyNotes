@@ -56,6 +56,8 @@
 
 记录自己炼丹的一些技巧
 
+鄙人实验代码地址：[code](https://github.com/Reverse2613/L-DRR)
+
 鄙人因为被深度学习实验所困扰[炼丹](deeplearning-alchemy.md)
 
 ### 碎碎念
